@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIS WEB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <img src="{{ url_for('static', filename='fis.png') }}" alt="icon" style="width: 100px; height: 50px;"onclick="refreshPage()">
+        <input type="text" id="search" placeholder="Search">
+        <button onclick="redirectToAdmin()">ADMIN</button>
+    </div>
+    <h2 id="heading">IST SaaS Dashboard</h2>
+    <div class="wrapper">
+        <div class="left"></div>
+        <div class="container" id="appGrid"></div>
+        <div class="right"></div>
+    </div>
+    <div id="overlay"></div>
+ 
+
+
+    <script>
+        var publicIp = "{{ public_ip }}";
+        console.log(publicIp);
+        console.log(publicIp);  
+    </script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+
+</body>
+</html>

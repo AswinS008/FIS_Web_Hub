@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icons Edit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .container {
+            width: 48%;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h2 {
+            margin: 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .table-container {
+            margin-bottom: 5px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px;
+        }
+        th, td {
+            padding: 2px;
+            text-align: left;
+        }
+        th {
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
+        }
+        td {
+            background-color: #f8f9fa;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        .image-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;  
+        }
+        .image-item {
+            flex: 1 1 calc(20% - 10px);  
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .image-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+        }
+        .image-item p {
+            margin: 5px 0 0;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: monospace;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+        .upload-container {
+            margin-top: 20px;
+        }
+        .upload-container input[type="file"] {
+            margin-bottom: 10px;
+        }
+        #tables-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height:600px; /* Adjust this height as needed */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Icons</h2>
+            <button id="Admin">Admin</button>
+        </div>
+        <div class="upload-container">
+            <h3>Upload New Icon</h3>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" id="icon-file" name="file" accept=".png" />
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+        <div id="image-list" class="image-list"></div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h2>Edit</h2>
+            <button id="restore-backup">restore-backup</button>
+            <button id="save-button">Save</button>
+        </div>
+        <div id="tables-container"></div>
+        <!-- <textarea id="json-content" readonly></textarea> -->
+    </div>
+    <script>
+        var publicIp = "{{ public_ip }}";
+        console.log(publicIp);
+        console.log(publicIp);  
+    </script>
+    <script>
+        console.log(publicIp);  
+        
+        async function fetchData() {
+            try {
+                const jsonResponse = await fetch(`http://${publicIp}:5000/api/get_data`);
+                const jsonData = await jsonResponse.json();
+                // document.getElementById('json-content').textContent = JSON.stringify(jsonData, null, 2);
+                populateTables(jsonData);
+
+                const imageList = document.getElementById('image-list');
+                const iconsResponse = await fetch(`http://${publicIp}:5000/api/get_icons`);
+                const iconsData = await iconsResponse.json();
+
+                imageList.innerHTML = '';
+                iconsData.forEach(item => {
+                    const imageItem = document.createElement('div');
+                    imageItem.className = 'image-item';
+                    imageItem.innerHTML = `
+                        <img src="http://${publicIp}:5000/icons/${item.filename}" alt="${item.name}" />
+                        <p>${item.name}</p>
+                    `;
+                    imageList.appendChild(imageItem);
+                });
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function createTable(item) {
+            const container = document.createElement('div');
+            container.classList.add('table-container');
+
+            const table = document.createElement('table');
+            const tbody = document.createElement('tbody');
+
+            Object.keys(item).forEach(key => {
+                const tr = document.createElement('tr');
+                const th = document.createElement('th');
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+
+                th.textContent = key;
+                input.type = 'text';
+                input.value = item[key];
+                input.setAttribute('data-key', key);
+                td.appendChild(input);
+                tr.appendChild(th);
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+            container.appendChild(table);
+            return container;
+        }
+
+        function populateTables(data) {
+            const container = document.getElementById('tables-container');
+            data.forEach(item => {
+                const table = createTable(item);
+                container.appendChild(table);
+            });
+        }
+
+        function getTableData() {
+            const containers = document.querySelectorAll('.table-container');
+            const data = [];
+
+            containers.forEach(container => {
+                const item = {};
+                const inputs = container.querySelectorAll('input');
+
+                inputs.forEach(input => {
+                    const key = input.getAttribute('data-key');
+                    let value = input.value;
+                    
+                    if (['group_id', 'id', 'icon'].includes(key)) {
+                        value = parseInt(value, 10);
+                    }
+
+                    item[key] = value;
+                });
+
+                data.push(item);
+            });
+            console.log(data);
+            return data;
+        }
+
+        async function restoreBackup() {
+            try {
+                const response = await fetch(`http://${publicIp}:5000/backup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log(data.message);
+                alert(data.message);
+                location.reload();  
+            } catch (error) {
+                console.error('There was an error!', error);
+                alert('There was an error! ' + error.message);
+            }
+        }
+
+        async function saveData() {
+            try {
+                const jsonData = getTableData();
+                console.log(jsonData);
+                const response = await fetch(`http://${publicIp}:5000/api/save_data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Data saved successfully');
+                } else {
+                    alert('Error saving data: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('Error saving data');
+            }
+        }
+
+       
+
+        async function uploadImage(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('icon-file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('No file selected.');
+                return;
+            }
+            if (file.type !== 'image/png') {
+                alert('Only PNG files are allowed.');
+                return;
+            }
+            if (file.size > 50 * 1024) {  
+                alert('File size exceeds 50KB.');
+                return;
+            }
+
+            const iconsResponse = await fetch(`http://${publicIp}:5000/api/get_icons`);
+            const iconsData = await iconsResponse.json();
+            const highestNumber = Math.max(0, ...iconsData.map(icon => {
+                const numberMatch = icon.name.match(/(\d+)$/);
+                return numberMatch ? parseInt(numberMatch[1], 10) : 0;
+            }));
+            const newFileName = `${highestNumber + 1}.png`;
+
+            const formData = new FormData();
+            formData.append('file', file, newFileName);
+
+            try {
+                const response = await fetch(`http://${publicIp}:5000/api/upload_icon`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Icon uploaded successfully');
+                    fetchData();
+                } else {
+                    alert('Error uploading icon: ' + result.message);
+                }
+                // location.reload()
+            } catch (error) {
+                console.error('Error uploading icon:', error);
+                alert('Error uploading icon');
+            }
+        }
+
+        document.getElementById('save-button').addEventListener('click', saveData);
+        document.getElementById('restore-backup').addEventListener('click', restoreBackup);
+        document.getElementById('upload-form').addEventListener('submit', uploadImage);
+        document.getElementById('Admin').addEventListener('click', () => {
+            window.location.href = `http://${publicIp}:5000/admin`;
+        });
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+   
+</body>
+</html>

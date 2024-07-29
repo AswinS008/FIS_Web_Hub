@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIS WEB </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <img src="{{ url_for('static', filename='fis.png') }}" alt="icon" style="width: 100px; height: 50px;"onclick="refreshPage()">
+        <input type="text" id="search" placeholder="Search">
+        <button id="showAddAppForm">Add App</button>
+        <button id="addicons">Add icons</button>
+        <button id="saveChangesButton">Save Changes</button>
+        <button id="logout">logout</button>
+    </div>
+    <h2 id="heading">IST SaaS Dashboard</h2>
+
+    <div class="wrapper">
+        <div class="left"></div>
+        <div class="container" id="appGrid"></div>
+        <div class="right"></div>
+    </div>
+    <div id="overlay"></div>
+
+    <div id="addAppForm">
+        <form id="appForm">
+            <input type="hidden" id="appId">
+            <input type="hidden" id="icon">
+            <label for="appName">App Name:</label>
+            <input type="text" id="appName" required>
+            <label for="appURL">App URL:</label>
+            <input type="url" id="appURL" required>
+            <label for="appGroup">Group:</label>
+            <select id="appGroup">
+        
+            </select>
+            <div id="newGroupNameContainer" style="display: none;">
+                <label for="newGroupName">New Group Name:</label>
+                <input type="text" id="newGroupName">
+            </div>
+            <button type="submit" id="saveButton" disabled>Save</button>
+        </form>
+        
+    </div>  
+    <script>
+        // Pass the Flask variable to a JavaScript variable
+        var publicIp = "{{ public_ip }}";
+        console.log(publicIp);
+        // Use the variable in JavaScript
+        // document.getElementById("ip-address").innerText = publicIp;
+        
+        console.log(publicIp); // This will log your public IP address to the console
+    </script>
+     <script>
+        var publicIp = "{{ public_ip }}";
+        console.log(publicIp);  
+    </script>
+    <script src="{{ url_for('static', filename='admin.js') }}"></script>
+   
+</body>
+</html>
